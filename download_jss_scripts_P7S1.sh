@@ -20,9 +20,10 @@
 ## and API Password here. Note: The API account only needs 'read' privileges to
 ## pull JSS scripts
 
-apiUser=""		## Set the API Username here if you want it hardcoded
-apiPass=""		## Set the API Password here if you want it hardcoded
-jssURL=""		## Set the JSS URL here if you want it hardcoded
+apiUser="emirmuminovic"					## Set the API Username here if you want it hardcoded
+apiPass="95361278Emcooo"				## Set the API Password here if you want it hardcoded
+jssURL="https://p7s1.jamfcloud.com"		## Set the JSS URL here if you want it hardcoded
+Token="Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGVkLWFwcCI6IkdFTkVSSUMiLCJhdXRoZW50aWNhdGlvbi10eXBlIjoiSlNTIiwiZ3JvdXBzIjpbXSwic3ViamVjdC10eXBlIjoiSlNTX1VTRVJfSUQiLCJ0b2tlbi11dWlkIjoiNTJlMGRiYzctZTRiNS00MGFlLTgyZTctYTI5NjY4MDk1MWI0IiwibGRhcC1zZXJ2ZXItaWQiOi0xLCJzdWIiOiIzIiwiZXhwIjoxNjM5MTg4NjY5fQ.XZpDhdcV2BEJurxn_sxuUqxsGWRP8s1CA9KZWCe8LO4"
 
 ## Set the script downloads folder path here.
 ## Default path is within the JAMF directory in "JSS_Scripts"
@@ -44,7 +45,7 @@ SYNOPSIS
 
 COMPATIBILITY:
 	Casper Suite version 9.x and 10.x
-	
+
 OPTIONS:
 	-h	Show this usage screen
 	-a	API account username
@@ -56,25 +57,25 @@ DESCRIPTION:
 	located on the Casper Suite server specified in the server option.
 	The Casper Suite server (JSS) URL is optional. If not specified at run time,
 	the script will attempt to obtain the JSS address from the client's settings.
-	
+
 	The script can be run in two primary ways.
 	1. Calling the script directly in the shell
-	
+
 	Example:
 	sudo "$0" -a "api_username" -p "api_password" -s "https://jss.server.com:8443"
-	
+
 	2. Using the jamf binary
-	
+
 	Example:
 	sudo jamf runScript -script "$script" -path "$directory" -p1 "api_username" -p2 "api_password" -p3 "https://jss.server.com:8443"
-	
+
 	You may also use the script directly in a JSS policy, specifying the API username,
 	API password and (optionally) the JSS URL in parameters 4 through 6, respectively.
 
 NOTES:
 	It is recommended to enclose the API username, API password and JSS URL in double quotes
 	to protect the script against any special characters or spaces in the strings.
-		
+
 EOF
 exit
 }
@@ -154,11 +155,14 @@ while read ID; do
 	## Get the Script name from its JSS ID
 	script_Name=$(curl -H "Accept: application/xml" -sku "${apiUser}:${apiPass}" "${jssScriptsURL}/id/${ID}" | xmllint --format - | awk -F'>|<' '/<name>/{print $3}')
 	## Get the actual script contents from the API record for the script
-	script_Content=$(curl -H "Accept: application/xml" -sku "${apiUser}:${apiPass}" "${jssScriptsURL}/id/${ID}" | xpath '/script/script_contents/text()')
+	#script_Content=$(curl -H "Accept: application/xml" -sku "${apiUser}:${apiPass}" "${jssScriptsURL}/id/${ID}" | xpath '/script/script_contents/text()')
+	#script_Content=$(curl -H "Accept: application/xml" -sku "${jssURL}/api/v1/scripts/${ID}/download" -H "accept: text/plain" -H "$Token" | xpath '/script/script_contents/text()')
+	#script_Content=$(curl -X GET "${jssURL}/api/v1/scripts/${ID}/download" -H "accept: text/plain" -H "${Token}" | xpath '/script/script_contents/text()')
+	script_Content=$(curl -X GET "${jssURL}/api/v1/scripts/${ID}/download" -H "accept: text/plain" -H "${Token}")
 	script_Ext=$(echo "$script_Name" | awk -F. '{print $NF}')
-	
+
 	echo "Script name is: $script_Name"
-	
+
 	if [ "$script_Ext" == "$script_Name" ]; then
 		## Get the first line, which should be a shebang of some kind
 		firstLine=$(echo "${script_Content}" | head -1)
@@ -212,6 +216,6 @@ A total of ${downloadCount} scripts were downloaded.
 
 You should check the output for each script to verify that the results are what you expect."
 
-echo -e "\nStep 4:	Done!"
+echo -e "\nStep 4:	Really Done!"
 
 exit
